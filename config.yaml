@@ -1,0 +1,39 @@
+#################
+# Main options
+#################
+save_base: "clips_test"
+model_path: "./models/yolov8n_ncnn_model"
+detect_class: "cell phone" #"bicycle"         
+
+min_box_w: 40
+min_box_h: 40
+save_crop_on_cross: true
+
+line_y_ratio: 0.75
+
+#################
+# Camera options
+#################
+
+main_size: [4656, 3496]
+lores_size: [864, 480]
+
+camera_transform:
+  vflip: true
+  hflip: true
+
+camera_controls:
+  AfMode: 2
+  AfTrigger: 0
+  AfSpeed: 1
+  ExposureTime: 0
+  AnalogueGain: 0
+
+inference:
+  imgsz: 320
+  conf: 0.35
+
+###################
+# Debugging options
+draw_debug: true
+window_name: "debug"

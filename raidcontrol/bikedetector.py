@@ -15,7 +15,7 @@ from ultralytics import YOLO
 # =========================
 DEFAULT_CONFIG = {
     "save_base": "clips2",
-    "model_path": "./yolov8n_ncnn_model",
+    "model_yolo_path": "./yolov8n_ncnn_model",
     "detect_class": "bicycle",
     "min_box_w": 40,
     "min_box_h": 40,
@@ -81,7 +81,7 @@ def bbox_bottom_center(x1, y1, x2, y2):
 # =========================
 # Model
 # =========================
-model = YOLO(CFG["model_path"])
+model = YOLO(CFG["model_yolo_path"])
 names = getattr(model, "names", {})
 
 try:
@@ -137,6 +137,7 @@ def shutdown(t0):
 t0 = time.time()
 prev_dets = []  
 try:
+
     while True:
         frame , _ = picam2.capture_arrays(["lores", "main"])
         frames += 1

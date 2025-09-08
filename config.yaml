@@ -1,8 +1,8 @@
 #################
-# Main options
+# Bike detector configuration
 #################
 save_base: "clips_test"
-model_path: "./models/yolov8n_ncnn_model"
+model_yolo_path: "./models/yolov8n_ncnn_model"
 detect_class: "cell phone" #"bicycle"         
 
 min_box_w: 40
@@ -32,6 +32,20 @@ camera_controls:
 inference:
   imgsz: 320
   conf: 0.35
+
+#################
+# plate detection options
+#################
+model_ocr_path: "./models/OCR/svm_ocr_arialv2.pkl"
+aspect_target: 2.125         # 17/8
+aspect_tol: 0.4              # ±40%
+min_area_frac: 0.01
+max_area_frac: 0.5
+
+canny_values: [0, 255]
+blur_kernel: [3, 3]
+close_kernel: [3, 3]
+
 
 ###################
 # Debugging options

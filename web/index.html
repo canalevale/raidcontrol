@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>RaidControl Monitor</title>
+
+<style>
+:root{
+  --bg0:#070A12;
+  --bg1:#0B1020;
+  --card:rgba(255,255,255,0.05);
+  --border:rgba(255,255,255,0.12);
+  --text:rgba(255,255,255,0.92);
+  --muted:rgba(255,255,255,0.6);
+
+  --c1:#d85714;
+  --c2:#ce1d1a;
+  --c3:#1d2f79;
+
+  --ok:rgba(62,214,147,0.18);
+  --warn:rgba(216,87,20,0.18);
+  --info:rgba(29,47,121,0.22);
+  --bad:rgba(206,29,26,0.18);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto;
+  color:var(--text);
+  background:
+    radial-gradient(900px 500px at 20% 0%, rgba(29,47,121,0.4), transparent 60%),
+    radial-gradient(900px 500px at 80% 10%, rgba(216,87,20,0.3), transparent 60%),
+    linear-gradient(180deg,var(--bg0),var(--bg1));
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  margin:0 0 16px 0;
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:.3px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  transition:all .25s ease;
+}
+
+.grid.detail-mode{
+  grid-template-columns:1fr;
+}
+
+.counts-card{
+  transition:opacity .25s ease;
+}
+
+.grid.detail-mode .counts-card{
+  display:none;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  backdrop-filter:blur(12px);
+}
+
+.card-title{
+  font-weight:800;
+  margin-bottom:12px;
+  font-size:14px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.6px;
+}
+
+.stat-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.stat{
+  background:rgba(255,255,255,0.05);
+  padding:10px;
+  border-radius:12px;
+  text-align:center;
+}
+
+.stat .k{font-size:11px;color:var(--muted)}
+.stat .v{font-size:18px;font-weight:900;margin-top:4px}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,td{
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  font-size:13px;
+}
+
+th{
+  text-align:left;
+  font-size:11px;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+
+tr:hover{
+  background:rgba(255,255,255,0.04);
+  cursor:pointer;
+}
+
+.badge{
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+  display:inline-block;
+}
+
+.pending{background:var(--warn)}
+.uploading{background:var(--info)}
+.sent{background:var(--ok)}
+.failed{background:var(--bad)}
+
+.mono{font-family:monospace;font-size:12px;color:var(--muted)}
+
+button{
+  background:linear-gradient(135deg,var(--c1),var(--c2));
+  border:none;
+  padding:8px 14px;
+  border-radius:10px;
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+}
+
+button:hover{
+  opacity:.9;
+}
+
+.detail img{
+  display:block;
+  max-width:100%;
+  width:auto;
+  height:auto;
+  max-height:75vh;   /* opcional, limita alto */
+  object-fit:contain;
+  margin:12px auto 0 auto;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(0,0,0,0.35);
+}
+pre{
+  background:rgba(0,0,0,0.4);
+  padding:12px;
+  border-radius:12px;
+  overflow:auto;
+  max-height:300px;
+  font-size:12px;
+}
+
+.table-card{
+  margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>RaidControl — Local Events Monitor</h1>
+
+<div class="grid" id="topGrid">
+
+  <div class="card counts-card">
+    <div class="card-title">Counts</div>
+    <div class="stat-grid">
+      <div class="stat"><div class="k">Pending</div><div class="v" id="c_pending">-</div></div>
+      <div class="stat"><div class="k">Uploading</div><div class="v" id="c_uploading">-</div></div>
+      <div class="stat"><div class="k">Sent</div><div class="v" id="c_sent">-</div></div>
+      <div class="stat"><div class="k">Failed</div><div class="v" id="c_failed">-</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Selected Event</div>
+    <div id="detail" class="detail">Click a row to see details.</div>
+  </div>
+
+</div>
+
+<div class="card table-card">
+  <div class="card-title">Latest Events</div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Detected</th>
+        <th>Number</th>
+        <th>Status</th>
+        <th>Retries</th>
+        <th>Image</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script>
+let timer=null;
+
+function badge(status){
+  return `<span class="badge ${status}">${status}</span>`;
+}
+
+async function loadData(){
+  const res = await fetch("/api/events?limit=50");
+  const data = await res.json();
+
+  document.getElementById("c_pending").textContent=data.counts.pending;
+  document.getElementById("c_uploading").textContent=data.counts.uploading;
+  document.getElementById("c_sent").textContent=data.counts.sent;
+  document.getElementById("c_failed").textContent=data.counts.failed;
+
+  const tbody=document.getElementById("tbody");
+  tbody.innerHTML="";
+
+  data.events.forEach(ev=>{
+    const tr=document.createElement("tr");
+    tr.onclick=()=>showDetail(ev);
+
+    tr.innerHTML=`
+      <td>${ev.id}</td>
+      <td class="mono">${ev.detected_at}</td>
+      <td><b>${ev.number_str}</b></td>
+      <td>${badge(ev.status)}</td>
+      <td>${ev.retries}</td>
+      <td>${ev.image_rel_path?"yes":"no"}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function showDetail(ev){
+  document.getElementById("topGrid").classList.add("detail-mode");
+
+  let metaPretty="";
+  try{
+    metaPretty=JSON.stringify(JSON.parse(ev.meta_json),null,2);
+  }catch{
+    metaPretty=ev.meta_json;
+  }
+
+  const html=`
+    <div style="margin-bottom:12px">
+      <button onclick="closeDetail()">← Back</button>
+    </div>
+
+    <p><b>ID:</b> ${ev.id}</p>
+    <p><b>Status:</b> ${badge(ev.status)}</p>
+    <p><b>Detected:</b> <span class="mono">${ev.detected_at}</span></p>
+    <p><b>Number:</b> ${ev.number_str}</p>
+    <p><b>Retries:</b> ${ev.retries}</p>
+
+    ${ev.image_rel_path?`<img src="/api/image?rel=${encodeURIComponent(ev.image_rel_path)}"/>`:""}
+
+    <h4>Metadata</h4>
+    <pre>${metaPretty}</pre>
+  `;
+
+  document.getElementById("detail").innerHTML=html;
+}
+
+function closeDetail(){
+  document.getElementById("topGrid").classList.remove("detail-mode");
+  document.getElementById("detail").innerHTML="Click a row to see details.";
+}
+
+loadData();
+timer=setInterval(loadData,500);
+</script>
+
+</body>
+</html>

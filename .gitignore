@@ -209,3 +209,4 @@ __marimo__/
 clips_test/
 .ocr/
 models/*
+local_db/*

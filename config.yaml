@@ -1,53 +1,111 @@
-#################
-# Bike detector configuration
-#################
-save_base: "clips_test"
-model_yolo_path: "./models/yolov8n_ncnn_model"
-detect_class: "cell phone" #"bicycle"         
-
-min_box_w: 40
-min_box_h: 40
-save_crop_on_cross: true
-
-line_y_ratio: 0.75
-
-#################
-# Camera options
-#################
-
-main_size: [4656, 3496]
-lores_size: [864, 480]
-
+# Configuracion General
+# -------------------------
+# Camera
+# -------------------------
+main_size: [2328, 1748] #[4656, 3496] # #[1920, 1080]  #[2328, 1748] 
 camera_transform:
   vflip: true
   hflip: true
-
 camera_controls:
-  AfMode: 2
-  AfTrigger: 0
+  # Autofocus settings (Picamera2 / libcamera)
+  AfMode: 0        # 2 = continuous AF 
   AfSpeed: 1
-  ExposureTime: 0
-  AnalogueGain: 0
+  AeExposureMode: 1
+  LensPosition: 4 # only for manual focus
+  ExposureTime: 4000  # 0 = auto exposure time 
+  AnalogueGain: 20
+  FrameDurationLimits: [33333, 33333]
+# -------------------------
+# Finish line 
+# -------------------------
+line_y_ratio: 0.75   # 
+# -------------------------
+# Hailo / Model
+# -------------------------
+hef_path: models/vueltaalpartido_v1/raid_yolo.hef
+output_key: yolov8n/yolov8_nms_postprocess
 
 inference:
-  imgsz: 320
-  conf: 0.35
+  score_th: 0.4
+  model_channels: RGB   
+  input_quantized_uint8: true
+  max_dets_total: 200
 
-#################
-# plate detection options
-#################
-model_ocr_path: "./models/OCR/svm_ocr_arialv2.pkl"
-aspect_target: 2.125         # 17/8
-aspect_tol: 0.4              # ±40%
-min_area_frac: 0.01
-max_area_frac: 0.5
+# -------------------------
+# Classes (SHORLO model)
+# -------------------------
+class_cyclist: 0
+class_number: 1
 
-canny_values: [0, 255]
-blur_kernel: [3, 3]
-close_kernel: [3, 3]
+# -------------------------
+# OCR
+# -------------------------
+ocr:
+  enabled: true
+  model_ocr_path: "models/OCR/digit_cnn_64_v4.onnx"
+
+# -------------------------
+# Crossing + association
+# -------------------------
+cross:
+  cooldown_ms: 900
+  key_quant: 24
+  number_inside_only: true
+  number_iou_fallback: true
+  min_number_iou: 0.02
+  
+  # Tracking de números huérfanos (sin ciclista asociado)
+  track_orphan_numbers: true    # Detectar números que cruzan sin ciclista visible
+  number_cooldown_ms: 500       # Cooldown para evitar duplicados de números
+  number_key_quant: 16          # Quantización para tracking de números
+
+# -------------------------
+# OCR - Morphology
+# -------------------------
+geometry:
+  enable: False
+  close_kernel: [3, 3]
+  close_iter: 2
+  dilate_kernel: [3, 3]
+  dilate_iter: 1
+
+reconnect:
+  kernel: [3, 3]
+  iterations: 1
+
+# -------------------------
+# OCR - Digit Detection
+# -------------------------
+digit_detection:
+  min_area_ratio: 0.02    # Área mínima del dígito (% del área total)
+  max_area_ratio: 0.8     # Área máxima del dígito (% del área total)
+  min_aspect: 0.1         # Aspect ratio mínimo (ancho/alto)
+  max_aspect: 1.6         # Aspect ratio máximo (ancho/alto)
+  min_contour_area: 15    # Área mínima de contorno (px²) para filtrar ruido
 
 
-###################
-# Debugging options
-draw_debug: true
-window_name: "debug"
+# -------------------------
+# Uploader / Backend
+# -------------------------
+station:
+  station_id: "rpi-001"      # ID del puesto (checkpoint) donde está el dispositivo
+  device_id: "rpi-001" 
+
+local_store:
+  db_path: "./local_db/uploader.db"     # SQLite local (writer + uploader lo comparten)
+  images_dir: "./local_db/images"       # carpeta donde se guardan los JPG de eventos
+
+backend:
+  # NOTA: api_base_url y device_api_key se leen desde .env por seguridad
+  # Ver .env.example para configurar
+  create_event_path: "/api/v1/stations/{station_id}/events"
+  upload_image_path_tmpl: "/api/v1/events/{event_id}/image"
+
+uploader:
+  enabled: true
+  poll_interval_sec: 0.5
+  batch_size: 10
+  request_timeout_sec: 10
+  max_retries: 50
+  backoff_base_sec: 1.0
+  backoff_max_sec: 60.0

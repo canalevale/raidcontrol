@@ -1,0 +1,78 @@
+#################
+# Bike detector configuration
+#################
+save_base: "clips_test"
+model_yolo_path: "./models/vueltaalpartido_v1/best_ncnn_model"
+detect_class: ["number", "cyclist"] #"bicycle"         
+
+min_box_w: 40
+min_box_h: 40
+save_crop_on_cross: true
+
+line_y_ratio: 0.6
+
+hef_path: models/vueltaalpartido_v1/raid_yolo.hef
+output_key: yolov8n/yolov8_nms_postprocess
+inference:
+  score_th: 0.5
+  use_rgb: false
+  imgsz: 640
+detect_class_id: 1
+#################
+# Camera options
+#################
+
+main_size:  [2328, 1748] #[4656, 3496]
+lores_size: [864, 480]
+
+camera_transform:
+  vflip: true
+  hflip: true
+
+camera_controls:
+  AfMode: 0 # 2: continuous AF, 1: single AF, 0: manual
+  AeExposureMode: 1
+  AfSpeed: 1  # 1: normal, 2: fast, 3: fastest
+  LensPosition: 4 # only for manual focus
+  ExposureTime: 0 #5000  # in microseconds
+  AnalogueGain: 0 #20
+
+
+#################
+# plate detection options
+#################
+model_ocr_path: "/home/vale/raidcontrol/raidcontrol/models/OCR/digit_cnn_64_v4.onnx"
+plate:
+  white_thresh: 170
+
+  red:
+    min_main: 80
+    delta_other: 20
+
+  green:
+    min_main: 80
+    delta_other: 20
+
+geometry:
+  enable: False
+  close_kernel: [3, 3]
+  close_iter: 2
+  dilate_kernel: [3, 3]
+  dilate_iter: 2
+
+binarize:
+  blur_ksize: 1
+
+reconnect:
+  kernel: [3, 3]
+  iterations: 1
+
+segmentation:
+  col_active_ratio: 0.15
+  row_active_ratio: 0.15
+  min_digit_width: 10
+
+###################
+# Debugging options
+draw_debug: true
+window_name: "debug"

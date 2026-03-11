@@ -9,8 +9,8 @@ from typing import List, Tuple, Optional, Dict, Any
 from ultralytics import YOLO
 
 # Add parent directory to path to import from raidcontrol module
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'raidcontrol'))
-from NumberOCR_CNN import DigitReaderCNNONNX
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from raidcontrol.NumberOCR_CNN import DigitReaderCNNONNX
 
 import random
 
@@ -135,7 +135,7 @@ def process_frame(
     frame: np.ndarray,
     yolo: YOLO,
     target_idxs: Optional[List[int]],
-    ocr: DigitReaderSVMNumpy,
+    ocr: DigitReaderCNNONNX,
     cfg: Dict[str, Any]
 ):
     h, w = frame.shape[:2]
@@ -165,7 +165,7 @@ def process_frame(
 
         x1, y1, x2, y2 = clamp_box(x1, y1, x2, y2, w, h)
 
-        if (x2 - x1) < cfg["min_box_w"] or (y2 - y1) < cfg["min_box_h"]:
+        if (x2 - x1) < 40 or (y2 - y1) < 40:
             continue
         if cls_id == 1:
             crop = frame[y1:y2, x1:x2]
@@ -208,15 +208,16 @@ def main():
     output_path = sys.argv[3] if len(sys.argv) > 3 else None
 
     print("[INFO] Loading YOLO NCNN model...")
-    yolo = YOLO(cfg["model_yolo_path"])
+    yolo = YOLO("models/vueltaalpartido_v1/best_ncnn_model")
 
     detect_classes = normalize_detect_classes(cfg.get("detect_class"))
     target_idxs = resolve_target_indices(yolo.names, detect_classes)
 
     print("[INFO] Loading OCR NumPy CNN...")
     ocr = DigitReaderCNNONNX(
-        onnx_path=cfg["model_ocr_path"],
+        onnx_path=cfg["ocr"]["model_ocr_path"],
         yaml_path=sys.argv[1],
+        debug=True
     )
 
     # ---------- IMAGE ----------

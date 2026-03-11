@@ -13,7 +13,7 @@ camera_controls:
   AeExposureMode: 1
   LensPosition: 4 # only for manual focus
   ExposureTime: 4000  # 0 = auto exposure time 
-  AnalogueGain: 20
+  AnalogueGain: 10
   FrameDurationLimits: [33333, 33333]
 # -------------------------
 # Finish line 
@@ -26,6 +26,7 @@ hef_path: models/vueltaalpartido_v1/raid_yolo.hef
 output_key: yolov8n/yolov8_nms_postprocess
 
 inference:
+  imgsz: 640
   score_th: 0.4
   model_channels: RGB   
   input_quantized_uint8: true

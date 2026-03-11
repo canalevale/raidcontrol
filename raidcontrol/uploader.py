@@ -233,6 +233,8 @@ def write_event(
     Fast path called by the main detection pipeline.
     Requires writer_init() to have been called once.
     """
+    if _is_duplicate_memory(number_str, ts_iso):
+        return "duplicate"
     global _WRITER_STATE
     if _WRITER_STATE is None:
         raise RuntimeError("Writer not initialized. Call writer_init(cfg_path) once at startup.")
@@ -277,6 +279,19 @@ def write_event(
 # ============================================================
 # Uploader daemon side (separate process)
 # ============================================================
+_LAST_EVENTS: Dict[str, float] = {}
+
+def _is_duplicate_memory(number_str: str, ts_iso: str, window_sec: int = 5) -> bool:
+    ts = datetime.fromisoformat(ts_iso).timestamp()
+
+    last = _LAST_EVENTS.get(number_str)
+
+    if last and (ts - last) < window_sec:
+        return True
+
+    _LAST_EVENTS[number_str] = ts
+    return False
+
 def _fetch_pending(conn: sqlite3.Connection, limit: int):
     cur = conn.execute(
         """

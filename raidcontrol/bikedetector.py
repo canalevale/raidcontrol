@@ -528,7 +528,7 @@ def main():
                     while True:
                         # 1) Capture
                         frame_rgb = picam2.capture_array("main")  # RGB
-
+                        ts_iso = datetime.now().astimezone().isoformat()
                         # 2) Preprocess
                         if input_quantized_uint8:
                             x = preprocess_uint8(frame_rgb, in_w, in_h, new_w, new_h, pad_x, pad_y, model_channels=model_channels)
@@ -592,7 +592,7 @@ def main():
                                     number_str, digits, _ , plate_color = ocr.read_number(crop_rgb, bgr = False)
                                 used_numbers.add(nb)  # Marcar como usado
                                 
-                            ts_iso = datetime.now().astimezone().isoformat()
+                            
                             meta = {
                                 "ts_utc": ts_iso,
                                 "line_y": line_y,
